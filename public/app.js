@@ -71,7 +71,7 @@
 
   function render() {
     const list = filtered();
-    countEl.textContent = `${panels.length} panel${panels.length === 1 ? "" : "es"}`;
+    countEl.textContent = `${panels.length} tarjeta${panels.length === 1 ? "" : "s"}`;
     empty.hidden = list.length > 0;
     grid.innerHTML = list.map((p, i) => cardHtml(p, i)).join("");
   }
