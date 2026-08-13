@@ -1,5 +1,8 @@
-# Directorio de Paneles YAAVS
+# Tablero Marketing YAAVS
 
+Accesos a solicitudes, NPS y reportes de Marketing.
+
+https://directorio-paneles-yaavs.onrender.com/
 ## En vivo (Render)
 
 https://directorio-paneles-yaavs.onrender.com/
