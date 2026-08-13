@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#002b44" />
+    <title>Directorio de paneles · YAAVS</title>
+    <link rel="icon" href="./favicon.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css?v=1" />
+  </head>
+  <body>
+    <div class="shell">
+      <div class="atmosphere" aria-hidden="true">
+        <div class="orb orb-a"></div>
+        <div class="orb orb-b"></div>
+        <div class="grain"></div>
+      </div>
+
+      <header class="hero">
+        <div class="hero-inner">
+          <img
+            class="brand"
+            src="./assets/logo-yaavs-white.png"
+            alt="YAAVS"
+            width="140"
+            height="140"
+          />
+          <p class="eyebrow">Formularios y paneles</p>
+          <h1>Directorio YAAVS</h1>
+          <p class="lede">
+            Todos los paneles en un solo lugar: abre el formulario o ve las respuestas en vivo.
+          </p>
+          <div class="hero-meta">
+            <span id="panelCount">0 paneles</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>Actualizado en vivo</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="page">
+        <div class="toolbar">
+          <label class="search">
+            <span class="sr-only">Buscar panel</span>
+            <input
+              type="search"
+              id="q"
+              placeholder="Buscar por nombre o tipo…"
+              autocomplete="off"
+            />
+          </label>
+          <div class="filters" id="filters" role="group" aria-label="Filtrar por tipo"></div>
+        </div>
+
+        <section class="grid" id="grid" aria-label="Paneles"></section>
+        <p class="empty" id="empty" hidden>No hay paneles con ese filtro.</p>
+      </main>
+
+      <footer class="foot">
+        <p>YAAVS · Directorio de paneles</p>
+      </footer>
+    </div>
+
+    <script src="./config.js?v=1"></script>
+    <script src="./app.js?v=1" defer></script>
+  </body>
+</html>
