@@ -4,7 +4,7 @@ window.YAAVS_DIRECTORY = [
     tag: "Solicitud",
     title: "Solicitud Activación BTL",
     blurb: "Alta de activación BTL y seguimiento de solicitudes.",
-    formUrl: "https://form.fillout.com/fQqFawkbBhus",
+    formUrl: "https://solicitudactivacionbtl.fillout.com/yaavs",
     resultsUrl: "https://coral-oryx-137304.hostingersite.com/",
   },
   {
