@@ -12,8 +12,8 @@ window.YAAVS_DIRECTORY = [
     tag: "Solicitud",
     title: "Solicitud Lonas y Toldos",
     blurb: "Solicitud de lonas y toldos, con panel de respuestas en vivo.",
-    formUrl: "https://form.fillout.com/9LnZ4jfJXnus",
-    resultsUrl: "https://dodgerblue-zebra-542971.hostingersite.com/",
+    formUrl: "https://solicitud-lona-especializada-yaavs.onrender.com/",
+    resultsUrl: "https://solicitud-lona-especializada-yaavs.onrender.com/resultados",
   },
   {
     id: "nps",
