@@ -9,57 +9,70 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=2" />
+    <link rel="stylesheet" href="./styles.css?v=5" />
   </head>
   <body>
     <div class="shell">
       <div class="atmosphere" aria-hidden="true">
+        <div class="mesh"></div>
         <div class="orb orb-a"></div>
         <div class="orb orb-b"></div>
+        <div class="grid-lines"></div>
         <div class="grain"></div>
       </div>
 
       <header class="hero">
+        <div class="hero-wash" aria-hidden="true"></div>
         <div class="hero-inner">
           <img
             class="brand"
             src="./assets/logo-yaavs-white.png"
             alt="YAAVS"
-            width="140"
-            height="140"
+            width="160"
+            height="160"
           />
-          <p class="eyebrow">Marketing YAAVS</p>
           <h1>Tablero Marketing</h1>
           <p class="lede">
-            Accesos rápidos: abre el formulario o consulta las respuestas en vivo.
+            Formularios y resultados de Marketing en un solo lugar.
           </p>
-          <div class="hero-meta">
-            <span id="panelCount">0 tarjetas</span>
-            <span class="dot" aria-hidden="true"></span>
-            <span>Actualizado en vivo</span>
-          </div>
+          <p class="hero-meta">
+            <span id="panelCount">0 accesos</span>
+            <span class="sep" aria-hidden="true">·</span>
+            <span class="live"><span class="live-dot" aria-hidden="true"></span> En vivo</span>
+          </p>
         </div>
       </header>
 
       <main class="page">
-        <div class="toolbar">
-          <label class="search">
-            <span class="sr-only">Buscar tarjeta</span>
-            <input
-              type="search"
-              id="q"
-              placeholder="Buscar por nombre o tipo…"
-              autocomplete="off"
-            />
-          </label>
-          <div class="filters" id="filters" role="group" aria-label="Filtrar por tipo"></div>
-        </div>
+        <section class="board" aria-labelledby="boardTitle">
+          <div class="board-head">
+            <div>
+              <p class="section-kicker">Accesos</p>
+              <h2 id="boardTitle">Elige una tarjeta</h2>
+            </div>
+            <p class="section-note">Abre el formulario o revisa las respuestas.</p>
+          </div>
 
-        <section class="grid" id="grid" aria-label="Tablero Marketing"></section>
-        <p class="empty" id="empty" hidden>No hay tarjetas con ese filtro.</p>
+          <div class="toolbar">
+            <label class="search">
+              <span class="sr-only">Buscar tarjeta</span>
+              <span class="search-icon" aria-hidden="true"></span>
+              <input
+                type="search"
+                id="q"
+                placeholder="Buscar por nombre o tipo…"
+                autocomplete="off"
+              />
+            </label>
+            <div class="filters" id="filters" role="group" aria-label="Filtrar por tipo"></div>
+          </div>
+
+          <section class="grid" id="grid" aria-label="Tablero Marketing"></section>
+          <p class="empty" id="empty" hidden>No hay tarjetas con ese filtro.</p>
+        </section>
       </main>
 
       <footer class="foot">
@@ -67,7 +80,7 @@
       </footer>
     </div>
 
-    <script src="./config.js?v=4"></script>
-    <script src="./app.js?v=4" defer></script>
+    <script src="./config.js?v=5"></script>
+    <script src="./app.js?v=5" defer></script>
   </body>
 </html>

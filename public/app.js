@@ -45,10 +45,15 @@
   function cardHtml(p, i) {
     const hasResults = Boolean(p.resultsUrl);
     const actionsClass = hasResults ? "actions" : "actions one";
+    const index = String(i + 1).padStart(2, "0");
     return `
-      <article class="panel" style="animation-delay:${Math.min(i * 0.05, 0.35)}s">
+      <article class="panel" data-tag="${escapeHtml(p.tag || "Panel")}" style="animation-delay:${Math.min(
+        i * 0.06,
+        0.36,
+      )}s">
         <div class="panel-top">
           <span class="tag">${escapeHtml(p.tag || "Panel")}</span>
+          <span class="panel-index">${index}</span>
         </div>
         <div>
           <h2>${escapeHtml(p.title)}</h2>
@@ -71,7 +76,7 @@
 
   function render() {
     const list = filtered();
-    countEl.textContent = `${panels.length} tarjeta${panels.length === 1 ? "" : "s"}`;
+    countEl.textContent = `${panels.length} acceso${panels.length === 1 ? "" : "s"}`;
     empty.hidden = list.length > 0;
     grid.innerHTML = list.map((p, i) => cardHtml(p, i)).join("");
   }
