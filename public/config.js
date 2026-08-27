@@ -47,4 +47,12 @@ window.YAAVS_DIRECTORY = [
     formUrl: "https://lightslategrey-deer-478072.hostingersite.com/",
     resultsUrl: "https://lightslategrey-deer-478072.hostingersite.com/resultados",
   },
+  {
+    id: "encuesta-trade-marketing",
+    tag: "NPS",
+    title: "Encuesta Trade Marketing",
+    blurb: "Experiencia en PDV: NPS, POP, ejecutivo de ventas y Trade Marketing.",
+    formUrl: "https://lightslategrey-deer-478072.hostingersite.com/trade",
+    resultsUrl: "https://lightslategrey-deer-478072.hostingersite.com/trade/resultados",
+  },
 ];
