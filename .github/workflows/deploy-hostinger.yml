@@ -54,7 +54,10 @@ jobs:
 
           const TOKEN = process.env.HOSTINGER_API_TOKEN;
           const USERNAME = process.env.HOSTINGER_USERNAME || 'u376360150';
-          const DOMAIN = process.env.HOSTINGER_DOMAIN || 'lightslategrey-deer-478072.hostingersite.com';
+          const DOMAIN = process.env.HOSTINGER_DOMAIN || 'directorio-paneles-yaavs.hostingersite.com';
+          if (DOMAIN.includes('lightslategrey-deer')) {
+            throw new Error('Refusing to deploy the directory onto the Reporte BTL site');
+          }
           const ARCHIVE = process.env.ARCHIVE;
           const BASE = 'https://developers.hostinger.com';
           const headers = {

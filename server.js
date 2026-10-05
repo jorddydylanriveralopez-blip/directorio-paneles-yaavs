@@ -2,7 +2,7 @@ const path = require("path");
 const express = require("express");
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3010;
+const PORT = Number(process.env.PORT) || 3000;
 const publicDir = path.join(__dirname, "public");
 
 app.disable("x-powered-by");
