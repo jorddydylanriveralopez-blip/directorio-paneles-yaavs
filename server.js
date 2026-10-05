@@ -1,3 +1,4 @@
+const fs = require("fs");
 const path = require("path");
 const express = require("express");
 
@@ -8,7 +9,32 @@ const publicDir = path.join(__dirname, "public");
 app.disable("x-powered-by");
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, app: "directorio-paneles-yaavs" });
+  let root = [];
+  let pub = [];
+  let pubErr = null;
+  try {
+    root = fs.readdirSync(__dirname);
+  } catch (err) {
+    root = [err.message];
+  }
+  try {
+    pub = fs.readdirSync(publicDir);
+  } catch (err) {
+    pubErr = err.message;
+  }
+  res.json({
+    ok: true,
+    app: "directorio-paneles-yaavs",
+    dir: __dirname,
+    root,
+    pub,
+    pubErr,
+    index: fs.existsSync(path.join(publicDir, "index.html")),
+  });
+});
+
+app.get("/api/ping-html", (_req, res) => {
+  res.type("html").send("<!doctype html><title>ok</title><p>hola</p>");
 });
 
 app.use(
@@ -25,8 +51,15 @@ app.use(
   }),
 );
 
-app.use((_req, res) => {
-  res.sendFile(path.join(publicDir, "index.html"));
+app.use((req, res, next) => {
+  res.sendFile(path.join(publicDir, "index.html"), (err) => {
+    if (err) next(err);
+  });
+});
+
+app.use((err, _req, res, _next) => {
+  console.error(err && err.stack ? err.stack : err);
+  res.status(500).json({ ok: false, error: err && err.message ? err.message : "error" });
 });
 
 app.listen(PORT, "0.0.0.0", () => {
