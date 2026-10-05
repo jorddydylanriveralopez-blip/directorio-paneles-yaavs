@@ -12,8 +12,8 @@ window.YAAVS_DIRECTORY = [
     tag: "Solicitud",
     title: "Solicitud Lonas y Toldos",
     blurb: "Solicitud de lonas y toldos, con panel de respuestas en vivo.",
-    formUrl: "https://lona-especializada-yaavs.hostingersite.com/",
-    resultsUrl: "https://lona-especializada-yaavs.hostingersite.com/resultados",
+    formUrl: "https://solicitudes-especializadas-yaavs.hostingersite.com/",
+    resultsUrl: "https://solicitudes-especializadas-yaavs.hostingersite.com/resultados",
   },
   {
     id: "nps",
