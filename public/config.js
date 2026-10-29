@@ -36,8 +36,8 @@ window.YAAVS_DIRECTORY = [
     tag: "NPS",
     title: "NPS Activación BTL",
     blurb: "NPS y satisfacción post-activación BTL.",
-    formUrl: "https://lawngreen-guanaco-656732.hostingersite.com/",
-    resultsUrl: "https://lawngreen-guanaco-656732.hostingersite.com/resultados",
+    formUrl: "https://encuesta-satisfaccion-activacion.ganayaavs.com/",
+    resultsUrl: "https://encuesta-satisfaccion-activacion.ganayaavs.com/resultados",
   },
   {
     id: "reporte-diario-activacion-btl",
