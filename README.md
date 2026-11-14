@@ -1,13 +1,14 @@
 # Tablero Marketing YAAVS
 
-Accesos a solicitudes, NPS y reportes de Marketing, con **centro de control** para editarlos desde el navegador.
+Accesos a solicitudes, NPS y reportes de Marketing, con **centro de control**, vistas previas y configuración remota de textos del formulario.
 
-https://directorio-paneles-yaavs.onrender.com/
+https://directorio-paneles-yaavs.hostingersite.com/
 
-## En vivo (Render)
+## En vivo
 
-- Público: https://directorio-paneles-yaavs.onrender.com/
-- Admin: https://directorio-paneles-yaavs.onrender.com/admin
+- Público: https://directorio-paneles-yaavs.hostingersite.com/
+- Admin: https://directorio-paneles-yaavs.hostingersite.com/admin
+- Render (backup): https://directorio-paneles-yaavs.onrender.com/
 
 ## Local
 
@@ -19,27 +20,58 @@ npm start
 Abre: http://localhost:3010  
 Admin: http://localhost:3010/admin
 
-Contraseña local por defecto: `YaavsDir-Local` (cámbiala con `ADMIN_PASSWORD` en `.env`).
+Contraseña local por defecto: `YaavsDir-Local` (cámbiala con `ADMIN_PASSWORD`).
 
 ## Centro de control
 
 En `/admin` puedes:
 
 - Crear, editar, ocultar y eliminar paneles
-- Reordenar
-- Exportar / importar JSON (respaldo; útil en Render free porque el disco se reinicia en redeploy)
+- Reordenar y ver preview (iframe o imagen)
+- Editar **contenido del formulario** (`formConfig`: hero, lede, botón enviar…)
+- Exportar / importar JSON
 
-Los datos viven en `data/panels.json` (no se sube a git). Si el archivo no existe, se siembra desde los paneles por defecto del servidor.
+## API de config remota (para formularios)
 
-## Variables de entorno (Render)
+```
+GET /api/panels/:id/config
+```
+
+CORS abierto. Ejemplo piloto Lonas:
+
+https://directorio-paneles-yaavs.hostingersite.com/api/panels/solicitud-lonas-toldos/config
+
+Respuesta:
+
+```json
+{
+  "ok": true,
+  "id": "solicitud-lonas-toldos",
+  "title": "…",
+  "formUrl": "…",
+  "resultsUrl": "…",
+  "formConfig": {
+    "heroTitle": "…",
+    "heroLede": "…",
+    "submitLabel": "…",
+    "resultsBoardLabel": "…",
+    "materialHints": {}
+  },
+  "updatedAt": "…"
+}
+```
+
+Para enganchar otro formulario: en su `app.js` haz `fetch` a esa URL y aplica los campos; define `DIRECTORY_CONFIG_URL` en el hosting del formulario.
+
+## Variables de entorno
 
 | Variable | Descripción |
 |---|---|
-| `ADMIN_PASSWORD` | Contraseña del centro de control (**obligatoria en producción**) |
-| `ADMIN_SESSION_SECRET` | Opcional; firma de cookie de sesión |
-| `DATA_DIR` | Opcional; carpeta persistente para `panels.json` |
-| `PORT` | Puerto (Render lo asigna) |
+| `ADMIN_PASSWORD` | Contraseña del centro de control |
+| `ADMIN_SESSION_SECRET` | Opcional; firma de cookie |
+| `DATA_DIR` | Opcional; carpeta para `panels.json` |
+| `PORT` | Puerto |
 
-## Paneles incluidos (semilla)
+## Nota Render free / Hostinger
 
-Si no hay `data/panels.json`, se cargan BTL, Lonas/Toldos, NPS, Proyectos Marketing, NPS Activación, Reporte diario y Trade Marketing.
+El disco puede reiniciarse en redeploy: usa **Exportar JSON** como respaldo.

@@ -55,8 +55,17 @@ const DEFAULT_PANELS = [
     tag: "Solicitud",
     title: "Solicitud Lonas y Toldos",
     blurb: "Solicitud de lonas y toldos, con panel de respuestas en vivo.",
-    formUrl: "https://solicitudes-especializadas-yaavs.hostingersite.com/",
-    resultsUrl: "https://solicitudes-especializadas-yaavs.hostingersite.com/resultados",
+    formUrl: "https://lona-especializada-yaavs.hostingersite.com/",
+    resultsUrl: "https://lona-especializada-yaavs.hostingersite.com/resultados",
+    previewUrl: "",
+    formConfig: {
+      heroTitle: "Solicitud de material especializado",
+      heroLede:
+        "Indica primero si la solicitud es de Centro o Foráneo. Luego elige el material y completa el cuestionario de manera correcta.",
+      submitLabel: "Enviar solicitud",
+      resultsBoardLabel: "Ver resultados",
+      materialHints: {},
+    },
   },
   {
     id: "nps",
@@ -117,6 +126,42 @@ function slugify(value) {
     .slice(0, 64);
 }
 
+function defaultFormConfigFor(id) {
+  if (id === "solicitud-lonas-toldos") {
+    return {
+      heroTitle: "Solicitud de material especializado",
+      heroLede:
+        "Indica primero si la solicitud es de Centro o Foráneo. Luego elige el material y completa el cuestionario de manera correcta.",
+      submitLabel: "Enviar solicitud",
+      resultsBoardLabel: "Ver resultados",
+      materialHints: {},
+    };
+  }
+  return {
+    heroTitle: "",
+    heroLede: "",
+    submitLabel: "",
+    resultsBoardLabel: "",
+    materialHints: {},
+  };
+}
+
+function normalizeFormConfig(raw, id) {
+  const base = defaultFormConfigFor(id);
+  const incoming = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  const hints =
+    incoming.materialHints && typeof incoming.materialHints === "object" && !Array.isArray(incoming.materialHints)
+      ? incoming.materialHints
+      : base.materialHints;
+  return {
+    heroTitle: String(incoming.heroTitle ?? base.heroTitle ?? "").trim(),
+    heroLede: String(incoming.heroLede ?? base.heroLede ?? "").trim(),
+    submitLabel: String(incoming.submitLabel ?? base.submitLabel ?? "").trim(),
+    resultsBoardLabel: String(incoming.resultsBoardLabel ?? base.resultsBoardLabel ?? "").trim(),
+    materialHints: hints,
+  };
+}
+
 function normalizePanel(raw, index = 0) {
   const title = String(raw?.title || "").trim();
   const id =
@@ -130,14 +175,38 @@ function normalizePanel(raw, index = 0) {
     blurb: String(raw?.blurb || "").trim(),
     formUrl: String(raw?.formUrl || "").trim(),
     resultsUrl: String(raw?.resultsUrl || "").trim(),
+    previewUrl: String(raw?.previewUrl || "").trim(),
+    formConfig: normalizeFormConfig(raw?.formConfig, id),
     active: raw?.active === false ? false : true,
     notes: String(raw?.notes || "").trim(),
     order: Number.isFinite(Number(raw?.order)) ? Number(raw.order) : index,
+    updatedAt: String(raw?.updatedAt || new Date().toISOString()),
   };
 }
 
 function seedPanels() {
   return DEFAULT_PANELS.map((p, i) => normalizePanel(p, i));
+}
+
+function migratePanels(list) {
+  let changed = false;
+  const out = list.map((p, i) => {
+    let next = normalizePanel(p, i);
+    if (next.id === "solicitud-lonas-toldos") {
+      if (/solicitudes-especializadas/i.test(next.formUrl || "")) {
+        next.formUrl = "https://lona-especializada-yaavs.hostingersite.com/";
+        next.resultsUrl = "https://lona-especializada-yaavs.hostingersite.com/resultados";
+        changed = true;
+      }
+      if (!String(next.formConfig?.heroTitle || "").trim()) {
+        next.formConfig = normalizeFormConfig(null, next.id);
+        changed = true;
+      }
+    }
+    return next;
+  });
+  if (changed) return writePanels(out);
+  return out.sort((a, b) => a.order - b.order);
 }
 
 function readPanels() {
@@ -155,7 +224,7 @@ function readPanels() {
       writePanels(seeded);
       return seeded;
     }
-    return list.map((p, i) => normalizePanel(p, i)).sort((a, b) => a.order - b.order);
+    return migratePanels(list.map((p, i) => normalizePanel(p, i)));
   } catch (_) {
     const seeded = seedPanels();
     writePanels(seeded);
@@ -163,10 +232,16 @@ function readPanels() {
   }
 }
 
-function writePanels(list) {
+function writePanels(list, { touchIds = null } = {}) {
   ensureStore();
+  const touch = touchIds ? new Set(touchIds) : null;
+  const now = new Date().toISOString();
   const normalized = (Array.isArray(list) ? list : [])
-    .map((p, i) => normalizePanel(p, i))
+    .map((p, i) => {
+      const next = normalizePanel(p, i);
+      if (!touch || touch.has(next.id)) next.updatedAt = now;
+      return next;
+    })
     .sort((a, b) => a.order - b.order)
     .map((p, i) => ({ ...p, order: i }));
   fs.writeFileSync(panelsFile, JSON.stringify(normalized, null, 2), "utf8");
@@ -181,7 +256,14 @@ function publicPanel(p) {
     blurb: p.blurb,
     formUrl: p.formUrl,
     resultsUrl: p.resultsUrl,
+    previewUrl: p.previewUrl || "",
   };
+}
+
+function corsPublic(res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
 function safeEqual(a, b) {
@@ -255,6 +337,29 @@ app.get("/api/panels", (_req, res) => {
   res.json({ ok: true, items, total: items.length });
 });
 
+app.options("/api/panels/:id/config", (_req, res) => {
+  corsPublic(res);
+  res.status(204).end();
+});
+
+app.get("/api/panels/:id/config", (req, res) => {
+  corsPublic(res);
+  res.setHeader("Cache-Control", "no-store");
+  const id = String(req.params.id || "").trim();
+  const panel = readPanels().find((p) => p.id === id);
+  if (!panel) return res.status(404).json({ ok: false, error: "Panel no encontrado" });
+  res.json({
+    ok: true,
+    id: panel.id,
+    title: panel.title,
+    formUrl: panel.formUrl,
+    resultsUrl: panel.resultsUrl,
+    previewUrl: panel.previewUrl || "",
+    formConfig: panel.formConfig || defaultFormConfigFor(panel.id),
+    updatedAt: panel.updatedAt || null,
+  });
+});
+
 app.post("/api/login", (req, res) => {
   const ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "local")
     .split(",")[0]
@@ -305,7 +410,7 @@ app.post("/api/admin/panels", requireAdmin, (req, res) => {
   if (panels.some((p) => p.id === next.id)) {
     return res.status(409).json({ ok: false, error: "Ya existe un panel con ese id" });
   }
-  const items = writePanels([...panels, next]);
+  const items = writePanels([...panels, next], { touchIds: [next.id] });
   res.json({ ok: true, item: items.find((p) => p.id === next.id), items });
 });
 
@@ -354,12 +459,15 @@ app.put("/api/admin/panels/:id", requireAdmin, (req, res) => {
       ...panels[idx],
       ...req.body,
       id: nextId,
+      formConfig: req.body?.formConfig
+        ? { ...panels[idx].formConfig, ...req.body.formConfig }
+        : panels[idx].formConfig,
       order: panels[idx].order,
     },
     panels[idx].order,
   );
   panels[idx] = updated;
-  const items = writePanels(panels);
+  const items = writePanels(panels, { touchIds: [updated.id] });
   res.json({ ok: true, item: items.find((p) => p.id === updated.id), items });
 });
 

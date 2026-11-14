@@ -20,6 +20,10 @@
       .replace(/"/g, "&quot;");
   }
 
+  function isImageUrl(url) {
+    return /\.(png|jpe?g|gif|webp|avif)(\?|$)/i.test(String(url || ""));
+  }
+
   function showMsg(el, text, kind = "error") {
     if (!el) return;
     if (!text) {
@@ -59,7 +63,29 @@
     logoutBtn.hidden = !ok;
   }
 
+  function cfg(p) {
+    return p.formConfig && typeof p.formConfig === "object" ? p.formConfig : {};
+  }
+
+  function adminPreview(p) {
+    const previewUrl = String(p.previewUrl || "").trim();
+    const formUrl = String(p.formUrl || "").trim();
+    const src = previewUrl || formUrl;
+    if (!src) return `<div class="admin-preview empty">Sin URL de formulario</div>`;
+    if (previewUrl && isImageUrl(previewUrl)) {
+      return `<div class="admin-preview"><img src="${escapeHtml(previewUrl)}" alt="Preview" /></div>`;
+    }
+    return `
+      <div class="admin-preview frame">
+        <div class="preview-scale" aria-hidden="true">
+          <iframe src="${escapeHtml(src)}" loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+        </div>
+      </div>`;
+  }
+
   function panelCard(p, index) {
+    const c = cfg(p);
+    const hintsJson = JSON.stringify(c.materialHints || {}, null, 2);
     return `
       <article class="admin-panel${p.active ? "" : " is-hidden"}" data-id="${escapeHtml(p.id)}">
         <div class="admin-panel-head">
@@ -67,6 +93,7 @@
             <strong>${escapeHtml(p.title)}</strong>
             <span class="tag">${escapeHtml(p.tag || "Panel")}</span>
             ${p.active ? "" : '<span class="badge-off">Oculto</span>'}
+            <code class="panel-id">${escapeHtml(p.id)}</code>
           </div>
           <div class="admin-order">
             <button type="button" class="icon-btn" data-move="up" title="Subir" ${index === 0 ? "disabled" : ""}>↑</button>
@@ -75,6 +102,7 @@
             }>↓</button>
           </div>
         </div>
+        ${adminPreview(p)}
         <form class="admin-form" data-form="${escapeHtml(p.id)}">
           <label>
             <span>Título</span>
@@ -97,17 +125,54 @@
             <input name="resultsUrl" type="url" value="${escapeHtml(p.resultsUrl)}" placeholder="https://…" />
           </label>
           <label class="full">
+            <span>URL captura / preview (opcional, imagen)</span>
+            <input name="previewUrl" type="url" value="${escapeHtml(p.previewUrl || "")}" placeholder="https://…/captura.jpg" />
+          </label>
+          <label class="full">
             <span>Notas (solo admin)</span>
             <textarea name="notes" rows="2" placeholder="Accesos, recordatorios…">${escapeHtml(
               p.notes || "",
             )}</textarea>
           </label>
+
+          <fieldset class="full admin-config">
+            <legend>Contenido del formulario</legend>
+            <p class="admin-config-note">Estos textos los lee el formulario en vivo (piloto: Lonas).</p>
+            <label>
+              <span>Título hero</span>
+              <input name="cfgHeroTitle" value="${escapeHtml(c.heroTitle || "")}" />
+            </label>
+            <label class="full">
+              <span>Descripción hero</span>
+              <textarea name="cfgHeroLede" rows="3">${escapeHtml(c.heroLede || "")}</textarea>
+            </label>
+            <label>
+              <span>Texto botón enviar</span>
+              <input name="cfgSubmitLabel" value="${escapeHtml(c.submitLabel || "")}" />
+            </label>
+            <label>
+              <span>Label tablero resultados</span>
+              <input name="cfgResultsBoardLabel" value="${escapeHtml(c.resultsBoardLabel || "")}" />
+            </label>
+            <label class="full">
+              <span>Hints por material (JSON)</span>
+              <textarea name="cfgMaterialHints" rows="4" spellcheck="false">${escapeHtml(hintsJson)}</textarea>
+            </label>
+          </fieldset>
+
           <label class="check">
             <input type="checkbox" name="active" ${p.active ? "checked" : ""} />
             <span>Visible en el tablero público</span>
           </label>
           <div class="admin-form-actions">
             <button type="submit" class="btn-primary">Guardar</button>
+            ${
+              p.formUrl
+                ? `<a class="btn-secondary" href="${escapeHtml(
+                    p.formUrl,
+                  )}" target="_blank" rel="noopener">Probar config</a>`
+                : ""
+            }
             <button type="button" class="btn-danger" data-delete>Eliminar</button>
           </div>
         </form>
@@ -168,8 +233,16 @@
           blurb: "",
           formUrl: "",
           resultsUrl: "",
+          previewUrl: "",
           notes: "",
           active: true,
+          formConfig: {
+            heroTitle: "",
+            heroLede: "",
+            submitLabel: "",
+            resultsBoardLabel: "",
+            materialHints: {},
+          },
         }),
       });
       panels = data.items || [];
@@ -219,14 +292,32 @@
     showMsg(adminMsg, "");
     const id = form.getAttribute("data-form");
     const fd = new FormData(form);
+    let materialHints = {};
+    try {
+      materialHints = JSON.parse(String(fd.get("cfgMaterialHints") || "{}"));
+      if (!materialHints || typeof materialHints !== "object" || Array.isArray(materialHints)) {
+        throw new Error("materialHints debe ser un objeto JSON");
+      }
+    } catch (err) {
+      showMsg(adminMsg, err.message || "JSON de hints inválido");
+      return;
+    }
     const payload = {
       title: String(fd.get("title") || "").trim(),
       tag: String(fd.get("tag") || "").trim(),
       blurb: String(fd.get("blurb") || "").trim(),
       formUrl: String(fd.get("formUrl") || "").trim(),
       resultsUrl: String(fd.get("resultsUrl") || "").trim(),
+      previewUrl: String(fd.get("previewUrl") || "").trim(),
       notes: String(fd.get("notes") || "").trim(),
       active: fd.get("active") === "on",
+      formConfig: {
+        heroTitle: String(fd.get("cfgHeroTitle") || "").trim(),
+        heroLede: String(fd.get("cfgHeroLede") || "").trim(),
+        submitLabel: String(fd.get("cfgSubmitLabel") || "").trim(),
+        resultsBoardLabel: String(fd.get("cfgResultsBoardLabel") || "").trim(),
+        materialHints,
+      },
     };
     try {
       const data = await api(`/api/admin/panels/${encodeURIComponent(id)}`, {
@@ -235,7 +326,7 @@
       });
       panels = data.items || [];
       renderList();
-      showMsg(adminMsg, "Guardado.", "ok");
+      showMsg(adminMsg, "Guardado. El formulario lo toma al recargar.", "ok");
     } catch (err) {
       showMsg(adminMsg, err.message || "No se pudo guardar");
     }
