@@ -198,6 +198,87 @@ body {
 .page {
   width: min(1040px, calc(100% - 1.5rem));
   margin: -2.2rem auto 2.8rem;
+  display: grid;
+  gap: 1.15rem;
+}
+
+.hero-jump {
+  margin-top: 1rem;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.hero-jump a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.hero-jump a:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.board-tools {
+  padding-bottom: 1rem;
+}
+
+.board-forms {
+  border-top: 3px solid rgba(0, 160, 200, 0.45);
+}
+
+.board-dash {
+  border-top: 3px solid rgba(14, 122, 95, 0.45);
+}
+
+.kind-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kind-form {
+  background: rgba(0, 160, 200, 0.14);
+  color: #014866;
+}
+
+.kind-dash {
+  background: rgba(14, 122, 95, 0.14);
+  color: #0e7a5f;
+}
+
+.panel-dash {
+  --accent: #0e7a5f;
+}
+
+.btn-form.is-ghost,
+.btn-results.is-ghost {
+  background: transparent;
+  box-shadow: none;
+}
+
+.btn-form.is-ghost {
+  color: var(--navy);
+  border: 1px solid rgba(0, 43, 68, 0.18);
+}
+
+.btn-results.is-ghost {
+  color: #0e7a5f;
+  border: 1px solid rgba(14, 122, 95, 0.28);
 }
 
 .board {

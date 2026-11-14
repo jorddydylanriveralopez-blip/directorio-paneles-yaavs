@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=8" />
+    <link rel="stylesheet" href="./styles.css?v=9" />
   </head>
   <body>
     <div class="shell">
@@ -36,29 +36,25 @@
           />
           <h1>Tablero Marketing</h1>
           <p class="lede">
-            Formularios y resultados de Marketing en un solo lugar.
+            Formularios para capturar y dashboards para revisar respuestas — por separado.
           </p>
           <p class="hero-meta">
             <span id="panelCount">0 accesos</span>
             <span class="sep" aria-hidden="true">·</span>
             <span class="live"><span class="live-dot" aria-hidden="true"></span> En vivo</span>
           </p>
+          <nav class="hero-jump" aria-label="Ir a sección">
+            <a href="#secFormularios">Formularios</a>
+            <a href="#secDashboards">Dashboards</a>
+          </nav>
         </div>
       </header>
 
       <main class="page">
-        <section class="board" aria-labelledby="boardTitle">
-          <div class="board-head">
-            <div>
-              <p class="section-kicker">Accesos</p>
-              <h2 id="boardTitle">Elige una tarjeta</h2>
-            </div>
-            <p class="section-note">Abre el formulario o revisa las respuestas.</p>
-          </div>
-
+        <section class="board board-tools" aria-label="Buscar">
           <div class="toolbar">
             <label class="search">
-              <span class="sr-only">Buscar tarjeta</span>
+              <span class="sr-only">Buscar</span>
               <span class="search-icon" aria-hidden="true"></span>
               <input
                 type="search"
@@ -69,9 +65,30 @@
             </label>
             <div class="filters" id="filters" role="group" aria-label="Filtrar por tipo"></div>
           </div>
+        </section>
 
-          <section class="grid" id="grid" aria-label="Tablero Marketing"></section>
-          <p class="empty" id="empty" hidden>No hay tarjetas con ese filtro.</p>
+        <section class="board board-forms" id="secFormularios" aria-labelledby="formsTitle">
+          <div class="board-head">
+            <div>
+              <p class="section-kicker">Captura</p>
+              <h2 id="formsTitle">Formularios</h2>
+            </div>
+            <p class="section-note">Para llenar o enviar una solicitud / encuesta.</p>
+          </div>
+          <section class="grid" id="gridForms" aria-label="Formularios"></section>
+          <p class="empty" id="emptyForms" hidden>No hay formularios con ese filtro.</p>
+        </section>
+
+        <section class="board board-dash" id="secDashboards" aria-labelledby="dashTitle">
+          <div class="board-head">
+            <div>
+              <p class="section-kicker">Seguimiento</p>
+              <h2 id="dashTitle">Dashboards</h2>
+            </div>
+            <p class="section-note">Para ver resultados y administrar respuestas.</p>
+          </div>
+          <section class="grid" id="gridDash" aria-label="Dashboards"></section>
+          <p class="empty" id="emptyDash" hidden>No hay dashboards con ese filtro.</p>
         </section>
       </main>
 
@@ -81,6 +98,6 @@
     </div>
 
     <script src="./config.js?v=10"></script>
-    <script src="./app.js?v=8" defer></script>
+    <script src="./app.js?v=9" defer></script>
   </body>
 </html>

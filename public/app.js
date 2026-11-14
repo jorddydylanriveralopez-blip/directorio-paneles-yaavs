@@ -1,6 +1,8 @@
 (() => {
-  const grid = document.getElementById("grid");
-  const empty = document.getElementById("empty");
+  const gridForms = document.getElementById("gridForms");
+  const gridDash = document.getElementById("gridDash");
+  const emptyForms = document.getElementById("emptyForms");
+  const emptyDash = document.getElementById("emptyDash");
   const qEl = document.getElementById("q");
   const filtersEl = document.getElementById("filters");
   const countEl = document.getElementById("panelCount");
@@ -36,68 +38,98 @@
       .join("");
   }
 
-  function filtered() {
+  function matchesFilter(p) {
+    if (activeTag !== "Todos" && p.tag !== activeTag) return false;
     const q = qEl.value.trim().toLowerCase();
-    return panels.filter((p) => {
-      if (activeTag !== "Todos" && p.tag !== activeTag) return false;
-      if (!q) return true;
-      const hay = [p.title, p.blurb, p.tag, p.id].join(" ").toLowerCase();
-      return hay.includes(q);
-    });
+    if (!q) return true;
+    const hay = [p.title, p.blurb, p.tag, p.id].join(" ").toLowerCase();
+    return hay.includes(q);
   }
 
-  function previewHtml(p) {
+  function formPanels() {
+    return panels.filter((p) => p.formUrl && matchesFilter(p));
+  }
+
+  function dashPanels() {
+    return panels.filter((p) => p.resultsUrl && matchesFilter(p));
+  }
+
+  function previewHtml(p, kind) {
     const previewUrl = String(p.previewUrl || "").trim();
     const formUrl = String(p.formUrl || "").trim();
-    const src = previewUrl || formUrl;
+    const resultsUrl = String(p.resultsUrl || "").trim();
+    const src =
+      kind === "dash"
+        ? previewUrl && isImageUrl(previewUrl)
+          ? previewUrl
+          : resultsUrl || formUrl
+        : previewUrl || formUrl;
     if (!src) {
       return `<div class="preview preview-empty"><span>Sin vista previa</span></div>`;
     }
-    if (previewUrl && isImageUrl(previewUrl)) {
+    if (previewUrl && isImageUrl(previewUrl) && (kind !== "dash" || !resultsUrl)) {
       return `
-        <button type="button" class="preview preview-img" data-preview="${escapeHtml(src)}" data-preview-kind="img" aria-label="Ver vista previa de ${escapeHtml(p.title)}">
+        <button type="button" class="preview preview-img" data-preview="${escapeHtml(
+          previewUrl,
+        )}" data-preview-kind="img" aria-label="Ver vista previa de ${escapeHtml(p.title)}">
+          <img src="${escapeHtml(previewUrl)}" alt="Vista previa: ${escapeHtml(p.title)}" loading="lazy" />
+        </button>`;
+    }
+    if (previewUrl && isImageUrl(previewUrl) && kind === "form") {
+      return `
+        <button type="button" class="preview preview-img" data-preview="${escapeHtml(
+          previewUrl,
+        )}" data-preview-kind="img" aria-label="Ver vista previa de ${escapeHtml(p.title)}">
           <img src="${escapeHtml(previewUrl)}" alt="Vista previa: ${escapeHtml(p.title)}" loading="lazy" />
         </button>`;
     }
     return `
-      <button type="button" class="preview preview-frame" data-preview="${escapeHtml(src)}" data-preview-kind="frame" aria-label="Ver vista previa de ${escapeHtml(p.title)}">
+      <button type="button" class="preview preview-frame" data-preview="${escapeHtml(
+        src,
+      )}" data-preview-kind="frame" aria-label="Ver vista previa de ${escapeHtml(p.title)}">
         <div class="preview-scale" aria-hidden="true">
           <iframe src="${escapeHtml(src)}" loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
         </div>
-        <span class="preview-veil">Ver preview</span>
+        <span class="preview-veil">${kind === "dash" ? "Ver dashboard" : "Ver formulario"}</span>
       </button>`;
   }
 
-  function cardHtml(p, i) {
-    const hasResults = Boolean(p.resultsUrl);
-    const actionsClass = hasResults ? "actions" : "actions one";
+  function cardHtml(p, i, kind) {
     const index = String(i + 1).padStart(2, "0");
+    const kindLabel = kind === "dash" ? "Dashboard" : "Formulario";
+    const primaryUrl = kind === "dash" ? p.resultsUrl : p.formUrl;
+    const primaryLabel = kind === "dash" ? "Abrir dashboard" : "Abrir formulario";
+    const secondaryUrl = kind === "dash" ? p.formUrl : p.resultsUrl;
+    const secondaryLabel = kind === "dash" ? "Ir al formulario" : "Ver dashboard";
+    const btnClass = kind === "dash" ? "btn-results" : "btn-form";
+    const secClass = kind === "dash" ? "btn-form" : "btn-results";
+
     return `
-      <article class="panel" data-tag="${escapeHtml(p.tag || "Panel")}" style="animation-delay:${Math.min(
-        i * 0.06,
-        0.36,
-      )}s">
-        ${previewHtml(p)}
+      <article class="panel panel-${kind}" data-tag="${escapeHtml(
+        p.tag || "Panel",
+      )}" data-kind="${kind}" style="animation-delay:${Math.min(i * 0.06, 0.36)}s">
+        ${previewHtml(p, kind)}
         <div class="panel-top">
           <span class="tag">${escapeHtml(p.tag || "Panel")}</span>
-          <span class="panel-index">${index}</span>
+          <span class="kind-pill kind-${kind}">${kindLabel}</span>
         </div>
         <div>
           <h2>${escapeHtml(p.title)}</h2>
           <p>${escapeHtml(p.blurb || "")}</p>
         </div>
-        <div class="${actionsClass}">
-          <a class="btn-form${p.formUrl ? "" : " is-disabled"}" href="${escapeHtml(
-            p.formUrl || "#",
-          )}" target="_blank" rel="noopener">Abrir formulario</a>
+        <div class="actions${secondaryUrl ? "" : " one"}">
+          <a class="${btnClass}" href="${escapeHtml(
+            primaryUrl || "#",
+          )}" target="_blank" rel="noopener">${primaryLabel}</a>
           ${
-            hasResults
-              ? `<a class="btn-results" href="${escapeHtml(
-                  p.resultsUrl,
-                )}" target="_blank" rel="noopener">Ver resultados</a>`
+            secondaryUrl
+              ? `<a class="${secClass} is-ghost" href="${escapeHtml(
+                  secondaryUrl,
+                )}" target="_blank" rel="noopener">${secondaryLabel}</a>`
               : ""
           }
         </div>
+        <span class="panel-index sr-only">${index}</span>
       </article>`;
   }
 
@@ -150,10 +182,18 @@
   }
 
   function render() {
-    const list = filtered();
-    countEl.textContent = `${panels.length} acceso${panels.length === 1 ? "" : "s"}`;
-    empty.hidden = list.length > 0;
-    grid.innerHTML = list.map((p, i) => cardHtml(p, i)).join("");
+    const forms = formPanels();
+    const dashes = dashPanels();
+    const formN = panels.filter((p) => p.formUrl).length;
+    const dashN = panels.filter((p) => p.resultsUrl).length;
+    countEl.textContent = `${formN} formulario${formN === 1 ? "" : "s"} · ${dashN} dashboard${
+      dashN === 1 ? "" : "s"
+    }`;
+
+    emptyForms.hidden = forms.length > 0;
+    emptyDash.hidden = dashes.length > 0;
+    gridForms.innerHTML = forms.map((p, i) => cardHtml(p, i, "form")).join("");
+    gridDash.innerHTML = dashes.map((p, i) => cardHtml(p, i, "dash")).join("");
   }
 
   async function loadPanels() {
@@ -180,7 +220,7 @@
     render();
   });
 
-  grid.addEventListener("click", (e) => {
+  document.querySelector(".page")?.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-preview]");
     if (!btn) return;
     e.preventDefault();
