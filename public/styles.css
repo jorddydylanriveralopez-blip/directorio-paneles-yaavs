@@ -1043,6 +1043,36 @@ body {
   gap: 1rem;
 }
 
+/* Puerta de acceso: sin sesión solo se ve el login */
+body.admin-locked .admin-shell,
+body.admin-locked .auth-only {
+  display: none !important;
+}
+
+body.admin-open #loginCard,
+body.admin-open #heroLedeLocked {
+  display: none !important;
+}
+
+body.admin-locked #heroLedeOpen {
+  display: none !important;
+}
+
+body.admin-locked .admin-page {
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.admin-locked .board-login {
+  margin-top: 0;
+}
+
+.admin-shell {
+  display: grid;
+  gap: 1.15rem;
+}
+
 .admin-login {
   display: grid;
   gap: 0.85rem;

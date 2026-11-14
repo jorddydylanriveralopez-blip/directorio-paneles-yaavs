@@ -61,11 +61,21 @@
     return data;
   }
 
+  const heroLedeLocked = document.getElementById("heroLedeLocked");
+  const heroLedeOpen = document.getElementById("heroLedeOpen");
+
   function setAuthed(ok) {
-    loginCard.hidden = ok;
-    adminShell.hidden = !ok;
-    adminJump.hidden = !ok;
-    logoutBtn.hidden = !ok;
+    document.body.classList.toggle("admin-locked", !ok);
+    document.body.classList.toggle("admin-open", ok);
+    document.title = ok
+      ? "Centro de control · YAAVS"
+      : "Acceso · Centro de control · YAAVS";
+    if (loginCard) loginCard.hidden = ok;
+    if (adminShell) adminShell.hidden = !ok;
+    if (adminJump) adminJump.hidden = !ok;
+    if (logoutBtn) logoutBtn.hidden = !ok;
+    if (heroLedeLocked) heroLedeLocked.hidden = ok;
+    if (heroLedeOpen) heroLedeOpen.hidden = !ok;
   }
 
   function cfg(p) {
