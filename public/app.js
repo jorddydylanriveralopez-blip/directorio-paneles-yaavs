@@ -1,11 +1,11 @@
 (() => {
-  const panels = Array.isArray(window.YAAVS_DIRECTORY) ? window.YAAVS_DIRECTORY : [];
   const grid = document.getElementById("grid");
   const empty = document.getElementById("empty");
   const qEl = document.getElementById("q");
   const filtersEl = document.getElementById("filters");
   const countEl = document.getElementById("panelCount");
 
+  let panels = Array.isArray(window.YAAVS_DIRECTORY) ? window.YAAVS_DIRECTORY : [];
   let activeTag = "Todos";
 
   function escapeHtml(str) {
@@ -81,6 +81,22 @@
     grid.innerHTML = list.map((p, i) => cardHtml(p, i)).join("");
   }
 
+  async function loadPanels() {
+    try {
+      const res = await fetch(`/api/panels?ts=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) throw new Error("api");
+      const data = await res.json();
+      if (Array.isArray(data.items)) panels = data.items;
+    } catch (_) {
+      if (!panels.length && Array.isArray(window.YAAVS_DIRECTORY)) {
+        panels = window.YAAVS_DIRECTORY;
+      }
+    }
+    if (activeTag !== "Todos" && !tags().includes(activeTag)) activeTag = "Todos";
+    renderFilters();
+    render();
+  }
+
   filtersEl.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-tag]");
     if (!btn) return;
@@ -93,4 +109,5 @@
 
   renderFilters();
   render();
+  loadPanels();
 })();
