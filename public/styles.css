@@ -1073,6 +1073,401 @@ body.admin-locked .board-login {
   gap: 1.15rem;
 }
 
+/* —— Admin cool room —— */
+body.admin-cool .atmosphere-admin {
+  background:
+    radial-gradient(920px 480px at 12% -8%, rgba(0, 200, 230, 0.28), transparent 58%),
+    radial-gradient(760px 420px at 100% 8%, rgba(0, 43, 68, 0.28), transparent 55%),
+    radial-gradient(640px 360px at 50% 100%, rgba(14, 122, 95, 0.12), transparent 60%),
+    linear-gradient(180deg, #dceaf2 0%, #e8f2f7 38%, #e4eef4 100%);
+}
+
+body.admin-cool .orb-c {
+  width: 280px;
+  height: 280px;
+  left: 42%;
+  top: 42%;
+  background: rgba(62, 200, 232, 0.22);
+  animation-delay: -9s;
+}
+
+body.admin-cool .aurora {
+  position: absolute;
+  inset: -10% -5% auto;
+  height: 42vh;
+  background:
+    linear-gradient(105deg, transparent 20%, rgba(0, 160, 200, 0.16) 45%, rgba(62, 200, 232, 0.1) 55%, transparent 75%);
+  filter: blur(28px);
+  animation: aurora-sweep 14s ease-in-out infinite alternate;
+  opacity: 0.85;
+}
+
+body.admin-cool .scanlines {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0, 43, 68, 0.35) 0 1px,
+    transparent 1px 4px
+  );
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 70%);
+}
+
+body.admin-cool .admin-hero {
+  overflow: hidden;
+}
+
+body.admin-cool .admin-hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #3ec8e8 30%, #00a0c8 50%, #7ce7ff 70%, transparent);
+  background-size: 200% 100%;
+  animation: beam 4.5s linear infinite;
+}
+
+body.admin-cool .admin-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(124, 231, 255, 0.28);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+body.admin-cool .admin-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7ce7ff;
+  box-shadow: 0 0 0 0 rgba(124, 231, 255, 0.65);
+  animation: pulse-live 1.8s ease-out infinite;
+}
+
+body.admin-cool .admin-hero h1 {
+  background: linear-gradient(110deg, #fff 20%, #9be9ff 48%, #fff 78%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: title-shine 5s linear infinite;
+}
+
+body.admin-cool .hero-jump a {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+body.admin-cool .hero-jump a:hover {
+  transform: translateY(-2px);
+  background: rgba(124, 231, 255, 0.18);
+  border-color: rgba(124, 231, 255, 0.45);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+body.admin-cool .jump-ico {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3ec8e8;
+  box-shadow: 0 0 10px rgba(62, 200, 232, 0.8);
+}
+
+body.admin-cool .jump-ico.jump-dash {
+  background: #3dd6a5;
+  box-shadow: 0 0 10px rgba(61, 214, 165, 0.75);
+}
+
+body.admin-cool .board {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.72)),
+    rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 22px 50px rgba(0, 21, 34, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
+}
+
+body.admin-cool .board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, rgba(0, 160, 200, 0.35), transparent 40%, rgba(62, 200, 232, 0.2));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+body.admin-cool .board-login {
+  animation: login-pop 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+body.admin-cool .board-login .btn-primary {
+  width: 100%;
+  min-height: 48px;
+  font-size: 1rem;
+}
+
+body.admin-cool .admin-login input:focus,
+body.admin-cool .admin-form input:focus,
+body.admin-cool .admin-form textarea:focus {
+  outline: none;
+  border-color: rgba(0, 160, 200, 0.55);
+  box-shadow:
+    0 0 0 4px rgba(0, 160, 200, 0.14),
+    0 10px 24px rgba(0, 43, 68, 0.06);
+}
+
+body.admin-cool .btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+body.admin-cool .btn-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-18deg);
+  animation: shine 2.8s ease-in-out infinite;
+}
+
+body.admin-cool .btn-primary,
+body.admin-cool .btn-secondary {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+body.admin-cool .btn-primary:hover,
+body.admin-cool .btn-secondary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+body.admin-cool .btn-primary {
+  box-shadow: 0 12px 28px rgba(0, 43, 68, 0.28);
+}
+
+body.admin-cool .admin-panel {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.96), rgba(245, 250, 252, 0.9));
+  border: 1px solid rgba(0, 43, 68, 0.08);
+  box-shadow: 0 14px 34px rgba(0, 21, 34, 0.07);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  animation: card-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+body.admin-cool .admin-panel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #00a0c8, #3ec8e8 55%, transparent);
+}
+
+body.admin-cool .admin-panel-dash::before {
+  background: linear-gradient(180deg, #0e7a5f, #3dd6a5 55%, transparent);
+}
+
+body.admin-cool .admin-panel:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 160, 200, 0.28);
+  box-shadow: 0 22px 48px rgba(0, 21, 34, 0.12);
+}
+
+body.admin-cool .admin-list .admin-panel:nth-child(1) { animation-delay: 0.05s; }
+body.admin-cool .admin-list .admin-panel:nth-child(2) { animation-delay: 0.1s; }
+body.admin-cool .admin-list .admin-panel:nth-child(3) { animation-delay: 0.15s; }
+body.admin-cool .admin-list .admin-panel:nth-child(4) { animation-delay: 0.2s; }
+body.admin-cool .admin-list .admin-panel:nth-child(5) { animation-delay: 0.25s; }
+body.admin-cool .admin-list .admin-panel:nth-child(6) { animation-delay: 0.3s; }
+body.admin-cool .admin-list .admin-panel:nth-child(7) { animation-delay: 0.35s; }
+
+body.admin-cool .admin-change-box {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(0, 160, 200, 0.1), rgba(62, 200, 232, 0.05));
+  border: 1px solid rgba(0, 160, 200, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+body.admin-cool .admin-change-box::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 231, 255, 0.35), transparent 70%);
+  pointer-events: none;
+  animation: maker-glow 5s ease-in-out infinite alternate;
+}
+
+body.admin-cool .live-preview {
+  border: 1px solid rgba(0, 160, 200, 0.22);
+  box-shadow: 0 16px 36px rgba(0, 21, 34, 0.12);
+}
+
+body.admin-cool .live-preview-head {
+  background: linear-gradient(90deg, rgba(0, 43, 68, 0.04), rgba(0, 160, 200, 0.08));
+}
+
+body.admin-cool .live-preview-head span::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  background: #00c48a;
+  box-shadow: 0 0 0 0 rgba(0, 196, 138, 0.55);
+  animation: pulse-live 1.8s ease-out infinite;
+  vertical-align: 1px;
+}
+
+body.admin-cool .change-history {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 250, 252, 0.92));
+  box-shadow: 0 12px 28px rgba(0, 21, 34, 0.06);
+}
+
+body.admin-cool .change-history li {
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+body.admin-cool .change-history li:hover {
+  transform: translateX(-2px);
+  background: rgba(0, 160, 200, 0.08);
+}
+
+body.admin-cool .kind-pill {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+body.admin-cool .section-kicker {
+  background: linear-gradient(90deg, #00a0c8, #014866);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes aurora-sweep {
+  from {
+    transform: translateX(-8%) translateY(0);
+    opacity: 0.55;
+  }
+  to {
+    transform: translateX(8%) translateY(4%);
+    opacity: 0.95;
+  }
+}
+
+@keyframes beam {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes pulse-live {
+  0% {
+    box-shadow: 0 0 0 0 rgba(124, 231, 255, 0.65);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(124, 231, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(124, 231, 255, 0);
+  }
+}
+
+@keyframes title-shine {
+  0% {
+    background-position: 120% 50%;
+  }
+  100% {
+    background-position: -120% 50%;
+  }
+}
+
+@keyframes shine {
+  0%,
+  55% {
+    left: -40%;
+  }
+  100% {
+    left: 140%;
+  }
+}
+
+@keyframes login-pop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes maker-glow {
+  from {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 0.95;
+    transform: scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.admin-cool .aurora,
+  body.admin-cool .admin-hero::after,
+  body.admin-cool .admin-hero h1,
+  body.admin-cool .admin-status-dot,
+  body.admin-cool .btn-shine::after,
+  body.admin-cool .live-preview-head span::before,
+  body.admin-cool .admin-change-box::after,
+  body.admin-cool .orb-c {
+    animation: none !important;
+  }
+}
+
 .admin-login {
   display: grid;
   gap: 0.85rem;

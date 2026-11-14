@@ -12,21 +12,28 @@
       href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=12" />
+    <link rel="stylesheet" href="./styles.css?v=13" />
   </head>
-  <body class="admin-body admin-locked">
+  <body class="admin-body admin-locked admin-cool">
     <div class="shell">
-      <div class="atmosphere" aria-hidden="true">
+      <div class="atmosphere atmosphere-admin" aria-hidden="true">
         <div class="mesh"></div>
         <div class="orb orb-a"></div>
         <div class="orb orb-b"></div>
+        <div class="orb orb-c"></div>
+        <div class="aurora"></div>
         <div class="grid-lines"></div>
+        <div class="scanlines"></div>
         <div class="grain"></div>
       </div>
 
       <header class="hero admin-hero">
         <div class="hero-wash" aria-hidden="true"></div>
         <div class="hero-inner">
+          <div class="admin-status">
+            <span class="admin-status-dot" aria-hidden="true"></span>
+            Control room · YAAVS
+          </div>
           <img
             class="brand"
             src="./assets/logo-yaavs-white.png"
@@ -43,8 +50,8 @@
             <button type="button" class="hero-link as-btn auth-only" id="logoutBtn">Salir</button>
           </p>
           <nav class="hero-jump auth-only" id="adminJump" aria-label="Ir a sección">
-            <a href="#adminForms">Formularios</a>
-            <a href="#adminDash">Dashboards</a>
+            <a href="#adminForms"><span class="jump-ico" aria-hidden="true"></span>Formularios</a>
+            <a href="#adminDash"><span class="jump-ico jump-dash" aria-hidden="true"></span>Dashboards</a>
           </nav>
         </div>
       </header>
@@ -63,7 +70,7 @@
               <span>Contraseña</span>
               <input type="password" id="password" name="password" autocomplete="current-password" required />
             </label>
-            <button type="submit" class="btn-primary">Entrar al centro de control</button>
+            <button type="submit" class="btn-primary btn-shine">Entrar al centro de control</button>
             <p class="admin-msg" id="loginMsg" hidden></p>
           </form>
         </section>
@@ -118,6 +125,6 @@
       </footer>
     </div>
 
-    <script src="./admin.js?v=12" defer></script>
+    <script src="./admin.js?v=13" defer></script>
   </body>
 </html>
