@@ -162,6 +162,63 @@ function normalizeFormConfig(raw, id) {
   };
 }
 
+function normalizeHistory(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .slice(0, 80)
+    .map((h, i) => ({
+      id: String(h?.id || `chg_${Date.now()}_${i}`),
+      at: String(h?.at || new Date().toISOString()),
+      note: String(h?.note || "").trim(),
+      kind: h?.kind === "dash" ? "dash" : "form",
+      summary: String(h?.summary || "").trim(),
+      changes: h?.changes && typeof h.changes === "object" && !Array.isArray(h.changes) ? h.changes : {},
+    }))
+    .filter((h) => h.note || h.summary || Object.keys(h.changes).length);
+}
+
+function diffFields(before, after, keys) {
+  const changes = {};
+  for (const key of keys) {
+    const from = String(before?.[key] ?? "");
+    const to = String(after?.[key] ?? "");
+    if (from !== to) changes[key] = { from, to };
+  }
+  return changes;
+}
+
+function summarizeChanges(changes) {
+  const labels = {
+    title: "título",
+    blurb: "descripción",
+    formUrl: "URL formulario",
+    resultsUrl: "URL dashboard",
+    previewUrl: "preview",
+    heroTitle: "hero",
+    heroLede: "texto hero",
+    submitLabel: "botón enviar",
+    resultsBoardLabel: "label resultados",
+    notes: "notas",
+    active: "visibilidad",
+  };
+  const keys = Object.keys(changes || {});
+  if (!keys.length) return "Sin cambios de campos";
+  return keys.map((k) => labels[k] || k).join(", ");
+}
+
+function pushHistory(panel, entry) {
+  const history = normalizeHistory(panel.history);
+  history.unshift({
+    id: `chg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    at: new Date().toISOString(),
+    note: String(entry.note || "").trim(),
+    kind: entry.kind === "dash" ? "dash" : "form",
+    summary: String(entry.summary || "").trim(),
+    changes: entry.changes || {},
+  });
+  return history.slice(0, 80);
+}
+
 function normalizePanel(raw, index = 0) {
   const title = String(raw?.title || "").trim();
   const id =
@@ -177,6 +234,7 @@ function normalizePanel(raw, index = 0) {
     resultsUrl: String(raw?.resultsUrl || "").trim(),
     previewUrl: String(raw?.previewUrl || "").trim(),
     formConfig: normalizeFormConfig(raw?.formConfig, id),
+    history: normalizeHistory(raw?.history),
     active: raw?.active === false ? false : true,
     notes: String(raw?.notes || "").trim(),
     order: Number.isFinite(Number(raw?.order)) ? Number(raw.order) : index,
@@ -357,6 +415,7 @@ app.get("/api/panels/:id/config", (req, res) => {
     previewUrl: panel.previewUrl || "",
     formConfig: panel.formConfig || defaultFormConfigFor(panel.id),
     updatedAt: panel.updatedAt || null,
+    latestChange: Array.isArray(panel.history) && panel.history[0] ? panel.history[0] : null,
   });
 });
 
@@ -454,21 +513,56 @@ app.put("/api/admin/panels/:id", requireAdmin, (req, res) => {
   if (nextId !== id && panels.some((p) => p.id === nextId)) {
     return res.status(409).json({ ok: false, error: "Ya existe un panel con ese id" });
   }
-  const updated = normalizePanel(
+
+  const before = panels[idx];
+  const nextConfig = req.body?.formConfig
+    ? normalizeFormConfig({ ...before.formConfig, ...req.body.formConfig }, nextId)
+    : before.formConfig;
+  const changeNote = String(req.body?.changeNote || "").trim();
+  const changeKind = req.body?.changeKind === "dash" ? "dash" : "form";
+
+  const draft = normalizePanel(
     {
-      ...panels[idx],
+      ...before,
       ...req.body,
       id: nextId,
-      formConfig: req.body?.formConfig
-        ? { ...panels[idx].formConfig, ...req.body.formConfig }
-        : panels[idx].formConfig,
-      order: panels[idx].order,
+      formConfig: nextConfig,
+      history: before.history,
+      order: before.order,
     },
-    panels[idx].order,
+    before.order,
   );
-  panels[idx] = updated;
-  const items = writePanels(panels, { touchIds: [updated.id] });
-  res.json({ ok: true, item: items.find((p) => p.id === updated.id), items });
+
+  const fieldChanges = {
+    ...diffFields(before, draft, [
+      "title",
+      "blurb",
+      "formUrl",
+      "resultsUrl",
+      "previewUrl",
+      "notes",
+      "active",
+    ]),
+    ...diffFields(before.formConfig || {}, draft.formConfig || {}, [
+      "heroTitle",
+      "heroLede",
+      "submitLabel",
+      "resultsBoardLabel",
+    ]),
+  };
+
+  if (changeNote || Object.keys(fieldChanges).length) {
+    draft.history = pushHistory(before, {
+      note: changeNote || "Actualización desde centro de control",
+      kind: changeKind,
+      summary: summarizeChanges(fieldChanges),
+      changes: fieldChanges,
+    });
+  }
+
+  panels[idx] = draft;
+  const items = writePanels(panels, { touchIds: [draft.id] });
+  res.json({ ok: true, item: items.find((p) => p.id === draft.id), items });
 });
 
 app.delete("/api/admin/panels/:id", requireAdmin, (req, res) => {

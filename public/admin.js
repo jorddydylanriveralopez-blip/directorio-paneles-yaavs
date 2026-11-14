@@ -72,27 +72,62 @@
     return p.formConfig && typeof p.formConfig === "object" ? p.formConfig : {};
   }
 
-  function adminPreview(p, kind) {
-    const previewUrl = String(p.previewUrl || "").trim();
-    const formUrl = String(p.formUrl || "").trim();
-    const resultsUrl = String(p.resultsUrl || "").trim();
-    const src =
-      kind === "dash"
-        ? previewUrl && isImageUrl(previewUrl)
-          ? previewUrl
-          : resultsUrl || formUrl
-        : previewUrl || formUrl;
-    if (!src) {
-      return `<div class="admin-preview empty">Sin URL de ${kind === "dash" ? "dashboard" : "formulario"}</div>`;
+  function formatWhen(iso) {
+    try {
+      return new Intl.DateTimeFormat("es-MX", {
+        dateStyle: "short",
+        timeStyle: "short",
+      }).format(new Date(iso));
+    } catch (_) {
+      return String(iso || "");
     }
-    if (previewUrl && isImageUrl(previewUrl) && (kind === "form" || !resultsUrl)) {
-      return `<div class="admin-preview"><img src="${escapeHtml(previewUrl)}" alt="Preview" /></div>`;
+  }
+
+  function historyHtml(p, kind) {
+    const rows = (Array.isArray(p.history) ? p.history : [])
+      .filter((h) => !kind || h.kind === kind || !h.kind)
+      .slice(0, 12);
+    if (!rows.length) {
+      return `<div class="change-history"><p class="admin-config-note">Sin cambios aún. Al aplicar, aparecen aquí.</p></div>`;
     }
     return `
-      <div class="admin-preview frame">
-        <div class="preview-scale" aria-hidden="true">
-          <iframe src="${escapeHtml(src)}" loading="lazy" tabindex="-1" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+      <div class="change-history">
+        <h3>Historial de cambios</h3>
+        <ul>
+          ${rows
+            .map(
+              (h) => `
+            <li>
+              <div class="chg-top">
+                <time datetime="${escapeHtml(h.at)}">${escapeHtml(formatWhen(h.at))}</time>
+                <span class="kind-pill kind-${escapeHtml(h.kind || "form")}">${
+                  h.kind === "dash" ? "Dashboard" : "Formulario"
+                }</span>
+              </div>
+              <p class="chg-note">${escapeHtml(h.note || "Actualización")}</p>
+              ${h.summary ? `<p class="chg-summary">${escapeHtml(h.summary)}</p>` : ""}
+            </li>`,
+            )
+            .join("")}
+        </ul>
+      </div>`;
+  }
+
+  function livePreview(p, kind) {
+    const src = kind === "dash" ? String(p.resultsUrl || "").trim() : String(p.formUrl || "").trim();
+    if (!src) {
+      return `<div class="live-preview empty">Agrega la URL para ver la vista en vivo</div>`;
+    }
+    const bust = `${src}${src.includes("?") ? "&" : "?"}live=${Date.now()}`;
+    return `
+      <div class="live-preview">
+        <div class="live-preview-head">
+          <span>Vista en vivo</span>
+          <button type="button" class="btn-secondary" data-refresh-live data-live-src="${escapeHtml(
+            src,
+          )}">Actualizar vista</button>
         </div>
+        <iframe data-live-frame src="${escapeHtml(bust)}" title="Vista en vivo" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
       </div>`;
   }
 
@@ -120,75 +155,78 @@
             }>↓</button>
           </div>
         </div>
-        ${adminPreview(p, "form")}
-        <form class="admin-form" data-form="${escapeHtml(p.id)}" data-kind="form">
-          <label>
-            <span>Título</span>
-            <input name="title" value="${escapeHtml(p.title)}" required />
-          </label>
-          <label>
-            <span>Tipo / tag</span>
-            <input name="tag" value="${escapeHtml(p.tag)}" required />
-          </label>
-          <label class="full">
-            <span>Descripción</span>
-            <textarea name="blurb" rows="2">${escapeHtml(p.blurb)}</textarea>
-          </label>
-          <label class="full">
-            <span>URL formulario</span>
-            <input name="formUrl" type="url" value="${escapeHtml(p.formUrl)}" placeholder="https://…" required />
-          </label>
-          <label class="full">
-            <span>URL captura / preview (opcional, imagen)</span>
-            <input name="previewUrl" type="url" value="${escapeHtml(p.previewUrl || "")}" placeholder="https://…/captura.jpg" />
-          </label>
-          <label class="full">
-            <span>Notas (solo admin)</span>
-            <textarea name="notes" rows="2" placeholder="Accesos, recordatorios…">${escapeHtml(
-              p.notes || "",
-            )}</textarea>
-          </label>
-
-          <fieldset class="full admin-config">
-            <legend>Contenido del formulario</legend>
-            <p class="admin-config-note">Estos textos los lee el formulario en vivo (piloto: Lonas).</p>
+        <div class="admin-studio">
+          <form class="admin-form" data-form="${escapeHtml(p.id)}" data-kind="form">
+            <fieldset class="full admin-config admin-change-box">
+              <legend>Escribe el cambio</legend>
+              <p class="admin-config-note">Describe qué quieres cambiar. Al guardar, el formulario en vivo lo toma en segundos y queda en el historial.</p>
+              <label class="full">
+                <span>¿Qué cambio quieres hacer?</span>
+                <textarea name="changeNote" rows="3" required placeholder="Ej. Cambiar el título a Solicitud urgente de lonas y el botón a Enviar ahora"></textarea>
+              </label>
+            </fieldset>
             <label>
-              <span>Título hero</span>
-              <input name="cfgHeroTitle" value="${escapeHtml(c.heroTitle || "")}" />
+              <span>Título en directorio</span>
+              <input name="title" value="${escapeHtml(p.title)}" required />
+            </label>
+            <label>
+              <span>Tipo / tag</span>
+              <input name="tag" value="${escapeHtml(p.tag)}" required />
             </label>
             <label class="full">
-              <span>Descripción hero</span>
-              <textarea name="cfgHeroLede" rows="3">${escapeHtml(c.heroLede || "")}</textarea>
-            </label>
-            <label>
-              <span>Texto botón enviar</span>
-              <input name="cfgSubmitLabel" value="${escapeHtml(c.submitLabel || "")}" />
-            </label>
-            <label>
-              <span>Label tablero resultados</span>
-              <input name="cfgResultsBoardLabel" value="${escapeHtml(c.resultsBoardLabel || "")}" />
+              <span>Descripción en directorio</span>
+              <textarea name="blurb" rows="2">${escapeHtml(p.blurb)}</textarea>
             </label>
             <label class="full">
-              <span>Hints por material (JSON)</span>
-              <textarea name="cfgMaterialHints" rows="4" spellcheck="false">${escapeHtml(hintsJson)}</textarea>
+              <span>URL formulario</span>
+              <input name="formUrl" type="url" value="${escapeHtml(p.formUrl)}" placeholder="https://…" required />
             </label>
-          </fieldset>
-
-          <label class="check">
-            <input type="checkbox" name="active" ${p.active ? "checked" : ""} />
-            <span>Visible en el tablero público</span>
-          </label>
-          <div class="admin-form-actions">
-            <button type="submit" class="btn-primary">Guardar formulario</button>
-            <a class="btn-secondary" href="${escapeHtml(p.formUrl)}" target="_blank" rel="noopener">Probar form</a>
-            ${
-              p.resultsUrl
-                ? `<a class="btn-secondary" href="#adminDash">Ver en Dashboards ↓</a>`
-                : ""
-            }
-            <button type="button" class="btn-danger" data-delete>Eliminar</button>
+            <label class="full">
+              <span>URL captura / preview (opcional, imagen)</span>
+              <input name="previewUrl" type="url" value="${escapeHtml(p.previewUrl || "")}" placeholder="https://…/captura.jpg" />
+            </label>
+            <fieldset class="full admin-config">
+              <legend>Textos del formulario (en vivo)</legend>
+              <label>
+                <span>Título hero</span>
+                <input name="cfgHeroTitle" value="${escapeHtml(c.heroTitle || "")}" />
+              </label>
+              <label class="full">
+                <span>Descripción hero</span>
+                <textarea name="cfgHeroLede" rows="3">${escapeHtml(c.heroLede || "")}</textarea>
+              </label>
+              <label>
+                <span>Texto botón enviar</span>
+                <input name="cfgSubmitLabel" value="${escapeHtml(c.submitLabel || "")}" />
+              </label>
+              <label>
+                <span>Label tablero resultados</span>
+                <input name="cfgResultsBoardLabel" value="${escapeHtml(c.resultsBoardLabel || "")}" />
+              </label>
+              <label class="full">
+                <span>Hints por material (JSON)</span>
+                <textarea name="cfgMaterialHints" rows="3" spellcheck="false">${escapeHtml(hintsJson)}</textarea>
+              </label>
+            </fieldset>
+            <label class="full">
+              <span>Notas internas</span>
+              <textarea name="notes" rows="2">${escapeHtml(p.notes || "")}</textarea>
+            </label>
+            <label class="check">
+              <input type="checkbox" name="active" ${p.active ? "checked" : ""} />
+              <span>Visible en el tablero público</span>
+            </label>
+            <div class="admin-form-actions">
+              <button type="submit" class="btn-primary">Aplicar en vivo</button>
+              <a class="btn-secondary" href="${escapeHtml(p.formUrl)}" target="_blank" rel="noopener">Abrir form</a>
+              <button type="button" class="btn-danger" data-delete>Eliminar</button>
+            </div>
+          </form>
+          <div class="admin-side">
+            ${livePreview(p, "form")}
+            ${historyHtml(p, "form")}
           </div>
-        </form>
+        </div>
       </article>`;
   }
 
@@ -214,45 +252,51 @@
             }>↓</button>
           </div>
         </div>
-        ${adminPreview(p, "dash")}
-        <form class="admin-form" data-form="${escapeHtml(p.id)}" data-kind="dash">
-          <label>
-            <span>Título</span>
-            <input name="title" value="${escapeHtml(p.title)}" required />
-          </label>
-          <label>
-            <span>Tipo / tag</span>
-            <input name="tag" value="${escapeHtml(p.tag)}" required />
-          </label>
-          <label class="full">
-            <span>URL dashboard / resultados</span>
-            <input name="resultsUrl" type="url" value="${escapeHtml(p.resultsUrl)}" placeholder="https://…" required />
-          </label>
-          <label class="full">
-            <span>URL captura / preview (opcional, imagen)</span>
-            <input name="previewUrl" type="url" value="${escapeHtml(p.previewUrl || "")}" placeholder="https://…/captura.jpg" />
-          </label>
-          <label class="full">
-            <span>Notas (solo admin)</span>
-            <textarea name="notes" rows="2" placeholder="Quién tiene acceso al tablero…">${escapeHtml(
-              p.notes || "",
-            )}</textarea>
-          </label>
-          <label class="check">
-            <input type="checkbox" name="active" ${p.active ? "checked" : ""} />
-            <span>Visible en el tablero público</span>
-          </label>
-          <div class="admin-form-actions">
-            <button type="submit" class="btn-primary">Guardar dashboard</button>
-            <a class="btn-secondary" href="${escapeHtml(p.resultsUrl)}" target="_blank" rel="noopener">Abrir dashboard</a>
-            ${
-              p.formUrl
-                ? `<a class="btn-secondary" href="#adminForms">Ver en Formularios ↑</a>`
-                : ""
-            }
-            <button type="button" class="btn-danger" data-delete>Eliminar</button>
+        <div class="admin-studio">
+          <form class="admin-form" data-form="${escapeHtml(p.id)}" data-kind="dash">
+            <fieldset class="full admin-config admin-change-box">
+              <legend>Escribe el cambio</legend>
+              <p class="admin-config-note">Describe el ajuste del dashboard. Queda registrado en el historial.</p>
+              <label class="full">
+                <span>¿Qué cambio quieres hacer?</span>
+                <textarea name="changeNote" rows="3" required placeholder="Ej. Actualizar link del tablero de resultados NPS"></textarea>
+              </label>
+            </fieldset>
+            <label>
+              <span>Título</span>
+              <input name="title" value="${escapeHtml(p.title)}" required />
+            </label>
+            <label>
+              <span>Tipo / tag</span>
+              <input name="tag" value="${escapeHtml(p.tag)}" required />
+            </label>
+            <label class="full">
+              <span>URL dashboard / resultados</span>
+              <input name="resultsUrl" type="url" value="${escapeHtml(p.resultsUrl)}" placeholder="https://…" required />
+            </label>
+            <label class="full">
+              <span>URL captura / preview (opcional, imagen)</span>
+              <input name="previewUrl" type="url" value="${escapeHtml(p.previewUrl || "")}" placeholder="https://…/captura.jpg" />
+            </label>
+            <label class="full">
+              <span>Notas (solo admin)</span>
+              <textarea name="notes" rows="2">${escapeHtml(p.notes || "")}</textarea>
+            </label>
+            <label class="check">
+              <input type="checkbox" name="active" ${p.active ? "checked" : ""} />
+              <span>Visible en el tablero público</span>
+            </label>
+            <div class="admin-form-actions">
+              <button type="submit" class="btn-primary">Aplicar cambio</button>
+              <a class="btn-secondary" href="${escapeHtml(p.resultsUrl)}" target="_blank" rel="noopener">Abrir dashboard</a>
+              <button type="button" class="btn-danger" data-delete>Eliminar</button>
+            </div>
+          </form>
+          <div class="admin-side">
+            ${livePreview(p, "dash")}
+            ${historyHtml(p, "dash")}
           </div>
-        </form>
+        </div>
       </article>`;
   }
 
@@ -385,6 +429,11 @@
     const kind = form.getAttribute("data-kind");
     const existing = panels.find((p) => p.id === id) || {};
     const fd = new FormData(form);
+    const changeNote = String(fd.get("changeNote") || "").trim();
+    if (!changeNote) {
+      showMsg(adminMsg, "Escribe qué cambio quieres hacer (queda en el historial).");
+      return;
+    }
 
     if (kind === "dash") {
       const payload = {
@@ -398,6 +447,8 @@
         formConfig: existing.formConfig || {},
         formUrl: existing.formUrl || "",
         blurb: existing.blurb || "",
+        changeNote,
+        changeKind: "dash",
       };
       const data = await api(`/api/admin/panels/${encodeURIComponent(id)}`, {
         method: "PUT",
@@ -405,7 +456,7 @@
       });
       panels = data.items || [];
       renderList();
-      showMsg(adminMsg, "Dashboard guardado.", "ok");
+      showMsg(adminMsg, "Cambio aplicado al dashboard y guardado en historial.", "ok");
       return;
     }
 
@@ -437,6 +488,8 @@
         resultsBoardLabel: String(fd.get("cfgResultsBoardLabel") || "").trim(),
         materialHints,
       },
+      changeNote,
+      changeKind: "form",
     };
 
     const data = await api(`/api/admin/panels/${encodeURIComponent(id)}`, {
@@ -445,7 +498,11 @@
     });
     panels = data.items || [];
     renderList();
-    showMsg(adminMsg, "Formulario guardado. El form en vivo lo toma al recargar.", "ok");
+    showMsg(
+      adminMsg,
+      "Cambio aplicado. El formulario en vivo se actualiza solo en unos segundos.",
+      "ok",
+    );
   }
 
   async function moveInScope(id, dir, scope) {
@@ -488,6 +545,16 @@
     const card = e.target.closest(".admin-panel");
     if (!card) return;
     const id = card.getAttribute("data-id");
+
+    const refresh = e.target.closest("[data-refresh-live]");
+    if (refresh) {
+      const src = refresh.getAttribute("data-live-src") || "";
+      const frame = refresh.closest(".live-preview")?.querySelector("[data-live-frame]");
+      if (frame && src) {
+        frame.src = `${src}${src.includes("?") ? "&" : "?"}live=${Date.now()}`;
+      }
+      return;
+    }
 
     if (del) {
       if (!confirm("¿Eliminar este panel completo (formulario y dashboard)?")) return;
