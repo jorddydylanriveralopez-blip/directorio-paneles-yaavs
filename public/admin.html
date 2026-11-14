@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=9" />
+    <link rel="stylesheet" href="./styles.css?v=10" />
   </head>
   <body class="admin-body">
     <div class="shell">
@@ -35,12 +35,16 @@
             height="160"
           />
           <h1>Centro de control</h1>
-          <p class="lede">Edita paneles, textos del formulario y mira la vista previa.</p>
+          <p class="lede">Administra formularios y dashboards por separado.</p>
           <p class="hero-meta">
             <a class="hero-link" href="./">Ver tablero público</a>
             <span class="sep" aria-hidden="true">·</span>
             <button type="button" class="hero-link as-btn" id="logoutBtn" hidden>Salir</button>
           </p>
+          <nav class="hero-jump" id="adminJump" hidden aria-label="Ir a sección">
+            <a href="#adminForms">Formularios</a>
+            <a href="#adminDash">Dashboards</a>
+          </nav>
         </div>
       </header>
 
@@ -63,24 +67,49 @@
           </form>
         </section>
 
-        <section class="board admin-board" id="adminCard" hidden>
-          <div class="board-head">
-            <div>
-              <p class="section-kicker">Paneles</p>
-              <h2>Administrar accesos</h2>
+        <div id="adminShell" hidden>
+          <section class="board board-tools">
+            <div class="board-head">
+              <div>
+                <p class="section-kicker">Herramientas</p>
+                <h2>Administrar accesos</h2>
+              </div>
+              <div class="admin-toolbar">
+                <button type="button" class="btn-secondary" id="newBtn">Nuevo panel</button>
+                <button type="button" class="btn-secondary" id="exportBtn">Exportar JSON</button>
+                <label class="btn-secondary as-label">
+                  Importar JSON
+                  <input type="file" id="importFile" accept="application/json,.json" hidden />
+                </label>
+              </div>
             </div>
-            <div class="admin-toolbar">
-              <button type="button" class="btn-secondary" id="newBtn">Nuevo panel</button>
-              <button type="button" class="btn-secondary" id="exportBtn">Exportar JSON</button>
-              <label class="btn-secondary as-label">
-                Importar JSON
-                <input type="file" id="importFile" accept="application/json,.json" hidden />
-              </label>
+            <p class="admin-msg" id="adminMsg" hidden></p>
+          </section>
+
+          <section class="board board-forms" id="adminForms" aria-labelledby="adminFormsTitle">
+            <div class="board-head">
+              <div>
+                <p class="section-kicker">Captura</p>
+                <h2 id="adminFormsTitle">Formularios</h2>
+              </div>
+              <p class="section-note">URLs de captura, textos del form y vista previa.</p>
             </div>
-          </div>
-          <p class="admin-msg" id="adminMsg" hidden></p>
-          <div class="admin-list" id="adminList"></div>
-        </section>
+            <div class="admin-list" id="adminListForms"></div>
+            <p class="empty" id="emptyAdminForms" hidden>No hay formularios. Crea un panel con URL de formulario.</p>
+          </section>
+
+          <section class="board board-dash" id="adminDash" aria-labelledby="adminDashTitle">
+            <div class="board-head">
+              <div>
+                <p class="section-kicker">Seguimiento</p>
+                <h2 id="adminDashTitle">Dashboards</h2>
+              </div>
+              <p class="section-note">URLs de resultados y tableros de respuestas.</p>
+            </div>
+            <div class="admin-list" id="adminListDash"></div>
+            <p class="empty" id="emptyAdminDash" hidden>No hay dashboards. Agrega URL de resultados a un panel.</p>
+          </section>
+        </div>
       </main>
 
       <footer class="foot">
@@ -88,6 +117,6 @@
       </footer>
     </div>
 
-    <script src="./admin.js?v=9" defer></script>
+    <script src="./admin.js?v=10" defer></script>
   </body>
 </html>

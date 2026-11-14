@@ -1,10 +1,14 @@
 (() => {
   const loginCard = document.getElementById("loginCard");
-  const adminCard = document.getElementById("adminCard");
+  const adminShell = document.getElementById("adminShell");
+  const adminJump = document.getElementById("adminJump");
   const loginForm = document.getElementById("loginForm");
   const loginMsg = document.getElementById("loginMsg");
   const adminMsg = document.getElementById("adminMsg");
-  const adminList = document.getElementById("adminList");
+  const adminListForms = document.getElementById("adminListForms");
+  const adminListDash = document.getElementById("adminListDash");
+  const emptyAdminForms = document.getElementById("emptyAdminForms");
+  const emptyAdminDash = document.getElementById("emptyAdminDash");
   const logoutBtn = document.getElementById("logoutBtn");
   const newBtn = document.getElementById("newBtn");
   const exportBtn = document.getElementById("exportBtn");
@@ -59,7 +63,8 @@
 
   function setAuthed(ok) {
     loginCard.hidden = ok;
-    adminCard.hidden = !ok;
+    adminShell.hidden = !ok;
+    adminJump.hidden = !ok;
     logoutBtn.hidden = !ok;
   }
 
@@ -67,12 +72,20 @@
     return p.formConfig && typeof p.formConfig === "object" ? p.formConfig : {};
   }
 
-  function adminPreview(p) {
+  function adminPreview(p, kind) {
     const previewUrl = String(p.previewUrl || "").trim();
     const formUrl = String(p.formUrl || "").trim();
-    const src = previewUrl || formUrl;
-    if (!src) return `<div class="admin-preview empty">Sin URL de formulario</div>`;
-    if (previewUrl && isImageUrl(previewUrl)) {
+    const resultsUrl = String(p.resultsUrl || "").trim();
+    const src =
+      kind === "dash"
+        ? previewUrl && isImageUrl(previewUrl)
+          ? previewUrl
+          : resultsUrl || formUrl
+        : previewUrl || formUrl;
+    if (!src) {
+      return `<div class="admin-preview empty">Sin URL de ${kind === "dash" ? "dashboard" : "formulario"}</div>`;
+    }
+    if (previewUrl && isImageUrl(previewUrl) && (kind === "form" || !resultsUrl)) {
       return `<div class="admin-preview"><img src="${escapeHtml(previewUrl)}" alt="Preview" /></div>`;
     }
     return `
@@ -83,27 +96,32 @@
       </div>`;
   }
 
-  function panelCard(p, index) {
+  function formCard(p, index, list) {
     const c = cfg(p);
     const hintsJson = JSON.stringify(c.materialHints || {}, null, 2);
     return `
-      <article class="admin-panel${p.active ? "" : " is-hidden"}" data-id="${escapeHtml(p.id)}">
+      <article class="admin-panel admin-panel-form${p.active ? "" : " is-hidden"}" data-id="${escapeHtml(
+        p.id,
+      )}" data-kind="form">
         <div class="admin-panel-head">
           <div>
             <strong>${escapeHtml(p.title)}</strong>
             <span class="tag">${escapeHtml(p.tag || "Panel")}</span>
+            <span class="kind-pill kind-form">Formulario</span>
             ${p.active ? "" : '<span class="badge-off">Oculto</span>'}
             <code class="panel-id">${escapeHtml(p.id)}</code>
           </div>
           <div class="admin-order">
-            <button type="button" class="icon-btn" data-move="up" title="Subir" ${index === 0 ? "disabled" : ""}>↑</button>
-            <button type="button" class="icon-btn" data-move="down" title="Bajar" ${
-              index === panels.length - 1 ? "disabled" : ""
+            <button type="button" class="icon-btn" data-move="up" data-scope="form" title="Subir" ${
+              index === 0 ? "disabled" : ""
+            }>↑</button>
+            <button type="button" class="icon-btn" data-move="down" data-scope="form" title="Bajar" ${
+              index === list.length - 1 ? "disabled" : ""
             }>↓</button>
           </div>
         </div>
-        ${adminPreview(p)}
-        <form class="admin-form" data-form="${escapeHtml(p.id)}">
+        ${adminPreview(p, "form")}
+        <form class="admin-form" data-form="${escapeHtml(p.id)}" data-kind="form">
           <label>
             <span>Título</span>
             <input name="title" value="${escapeHtml(p.title)}" required />
@@ -118,11 +136,7 @@
           </label>
           <label class="full">
             <span>URL formulario</span>
-            <input name="formUrl" type="url" value="${escapeHtml(p.formUrl)}" placeholder="https://…" />
-          </label>
-          <label class="full">
-            <span>URL resultados</span>
-            <input name="resultsUrl" type="url" value="${escapeHtml(p.resultsUrl)}" placeholder="https://…" />
+            <input name="formUrl" type="url" value="${escapeHtml(p.formUrl)}" placeholder="https://…" required />
           </label>
           <label class="full">
             <span>URL captura / preview (opcional, imagen)</span>
@@ -165,12 +179,11 @@
             <span>Visible en el tablero público</span>
           </label>
           <div class="admin-form-actions">
-            <button type="submit" class="btn-primary">Guardar</button>
+            <button type="submit" class="btn-primary">Guardar formulario</button>
+            <a class="btn-secondary" href="${escapeHtml(p.formUrl)}" target="_blank" rel="noopener">Probar form</a>
             ${
-              p.formUrl
-                ? `<a class="btn-secondary" href="${escapeHtml(
-                    p.formUrl,
-                  )}" target="_blank" rel="noopener">Probar config</a>`
+              p.resultsUrl
+                ? `<a class="btn-secondary" href="#adminDash">Ver en Dashboards ↓</a>`
                 : ""
             }
             <button type="button" class="btn-danger" data-delete>Eliminar</button>
@@ -179,8 +192,85 @@
       </article>`;
   }
 
+  function dashCard(p, index, list) {
+    return `
+      <article class="admin-panel admin-panel-dash${p.active ? "" : " is-hidden"}" data-id="${escapeHtml(
+        p.id,
+      )}" data-kind="dash">
+        <div class="admin-panel-head">
+          <div>
+            <strong>${escapeHtml(p.title)}</strong>
+            <span class="tag">${escapeHtml(p.tag || "Panel")}</span>
+            <span class="kind-pill kind-dash">Dashboard</span>
+            ${p.active ? "" : '<span class="badge-off">Oculto</span>'}
+            <code class="panel-id">${escapeHtml(p.id)}</code>
+          </div>
+          <div class="admin-order">
+            <button type="button" class="icon-btn" data-move="up" data-scope="dash" title="Subir" ${
+              index === 0 ? "disabled" : ""
+            }>↑</button>
+            <button type="button" class="icon-btn" data-move="down" data-scope="dash" title="Bajar" ${
+              index === list.length - 1 ? "disabled" : ""
+            }>↓</button>
+          </div>
+        </div>
+        ${adminPreview(p, "dash")}
+        <form class="admin-form" data-form="${escapeHtml(p.id)}" data-kind="dash">
+          <label>
+            <span>Título</span>
+            <input name="title" value="${escapeHtml(p.title)}" required />
+          </label>
+          <label>
+            <span>Tipo / tag</span>
+            <input name="tag" value="${escapeHtml(p.tag)}" required />
+          </label>
+          <label class="full">
+            <span>URL dashboard / resultados</span>
+            <input name="resultsUrl" type="url" value="${escapeHtml(p.resultsUrl)}" placeholder="https://…" required />
+          </label>
+          <label class="full">
+            <span>URL captura / preview (opcional, imagen)</span>
+            <input name="previewUrl" type="url" value="${escapeHtml(p.previewUrl || "")}" placeholder="https://…/captura.jpg" />
+          </label>
+          <label class="full">
+            <span>Notas (solo admin)</span>
+            <textarea name="notes" rows="2" placeholder="Quién tiene acceso al tablero…">${escapeHtml(
+              p.notes || "",
+            )}</textarea>
+          </label>
+          <label class="check">
+            <input type="checkbox" name="active" ${p.active ? "checked" : ""} />
+            <span>Visible en el tablero público</span>
+          </label>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn-primary">Guardar dashboard</button>
+            <a class="btn-secondary" href="${escapeHtml(p.resultsUrl)}" target="_blank" rel="noopener">Abrir dashboard</a>
+            ${
+              p.formUrl
+                ? `<a class="btn-secondary" href="#adminForms">Ver en Formularios ↑</a>`
+                : ""
+            }
+            <button type="button" class="btn-danger" data-delete>Eliminar</button>
+          </div>
+        </form>
+      </article>`;
+  }
+
+  function formPanels() {
+    return panels.filter((p) => String(p.formUrl || "").trim());
+  }
+
+  function dashPanels() {
+    return panels.filter((p) => String(p.resultsUrl || "").trim());
+  }
+
   function renderList() {
-    adminList.innerHTML = panels.map((p, i) => panelCard(p, i)).join("");
+    const forms = formPanels();
+    const dashes = dashPanels();
+    emptyAdminForms.hidden = forms.length > 0;
+    emptyAdminDash.hidden = dashes.length > 0;
+    adminListForms.innerHTML = forms.map((p, i) => formCard(p, i, forms)).join("");
+    adminListDash.innerHTML = dashes.map((p, i) => dashCard(p, i, dashes)).join("");
   }
 
   async function loadPanels() {
@@ -219,7 +309,8 @@
     } catch (_) {}
     setAuthed(false);
     panels = [];
-    adminList.innerHTML = "";
+    adminListForms.innerHTML = "";
+    adminListDash.innerHTML = "";
   });
 
   newBtn.addEventListener("click", async () => {
@@ -231,7 +322,7 @@
           title: "Nuevo panel",
           tag: "Panel",
           blurb: "",
-          formUrl: "",
+          formUrl: "https://",
           resultsUrl: "",
           previewUrl: "",
           notes: "",
@@ -247,8 +338,12 @@
       });
       panels = data.items || [];
       renderList();
-      showMsg(adminMsg, "Panel creado. Edítalo y guarda.", "ok");
-      adminList.querySelector(".admin-panel:last-child")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      showMsg(adminMsg, "Panel creado en Formularios. Completa la URL y guarda.", "ok");
+      document.getElementById("adminForms")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      adminListForms.querySelector(".admin-panel:last-child")?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     } catch (err) {
       showMsg(adminMsg, err.message || "No se pudo crear");
     }
@@ -285,13 +380,35 @@
     }
   });
 
-  adminList.addEventListener("submit", async (e) => {
-    const form = e.target.closest("form[data-form]");
-    if (!form) return;
-    e.preventDefault();
-    showMsg(adminMsg, "");
+  async function saveFormKind(form) {
     const id = form.getAttribute("data-form");
+    const kind = form.getAttribute("data-kind");
+    const existing = panels.find((p) => p.id === id) || {};
     const fd = new FormData(form);
+
+    if (kind === "dash") {
+      const payload = {
+        ...existing,
+        title: String(fd.get("title") || "").trim(),
+        tag: String(fd.get("tag") || "").trim(),
+        resultsUrl: String(fd.get("resultsUrl") || "").trim(),
+        previewUrl: String(fd.get("previewUrl") || "").trim(),
+        notes: String(fd.get("notes") || "").trim(),
+        active: fd.get("active") === "on",
+        formConfig: existing.formConfig || {},
+        formUrl: existing.formUrl || "",
+        blurb: existing.blurb || "",
+      };
+      const data = await api(`/api/admin/panels/${encodeURIComponent(id)}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+      panels = data.items || [];
+      renderList();
+      showMsg(adminMsg, "Dashboard guardado.", "ok");
+      return;
+    }
+
     let materialHints = {};
     try {
       materialHints = JSON.parse(String(fd.get("cfgMaterialHints") || "{}"));
@@ -302,15 +419,17 @@
       showMsg(adminMsg, err.message || "JSON de hints inválido");
       return;
     }
+
     const payload = {
+      ...existing,
       title: String(fd.get("title") || "").trim(),
       tag: String(fd.get("tag") || "").trim(),
       blurb: String(fd.get("blurb") || "").trim(),
       formUrl: String(fd.get("formUrl") || "").trim(),
-      resultsUrl: String(fd.get("resultsUrl") || "").trim(),
       previewUrl: String(fd.get("previewUrl") || "").trim(),
       notes: String(fd.get("notes") || "").trim(),
       active: fd.get("active") === "on",
+      resultsUrl: existing.resultsUrl || "",
       formConfig: {
         heroTitle: String(fd.get("cfgHeroTitle") || "").trim(),
         heroLede: String(fd.get("cfgHeroLede") || "").trim(),
@@ -319,20 +438,51 @@
         materialHints,
       },
     };
-    try {
-      const data = await api(`/api/admin/panels/${encodeURIComponent(id)}`, {
-        method: "PUT",
-        body: JSON.stringify(payload),
-      });
-      panels = data.items || [];
-      renderList();
-      showMsg(adminMsg, "Guardado. El formulario lo toma al recargar.", "ok");
-    } catch (err) {
-      showMsg(adminMsg, err.message || "No se pudo guardar");
-    }
-  });
 
-  adminList.addEventListener("click", async (e) => {
+    const data = await api(`/api/admin/panels/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+    panels = data.items || [];
+    renderList();
+    showMsg(adminMsg, "Formulario guardado. El form en vivo lo toma al recargar.", "ok");
+  }
+
+  async function moveInScope(id, dir, scope) {
+    const scoped = scope === "dash" ? dashPanels() : formPanels();
+    const idx = scoped.findIndex((p) => p.id === id);
+    if (idx < 0) return;
+    const swap = dir === "up" ? idx - 1 : idx + 1;
+    if (swap < 0 || swap >= scoped.length) return;
+
+    const a = scoped[idx].id;
+    const b = scoped[swap].id;
+    const ia = panels.findIndex((p) => p.id === a);
+    const ib = panels.findIndex((p) => p.id === b);
+    if (ia < 0 || ib < 0) return;
+    const next = panels.slice();
+    const tmp = next[ia];
+    next[ia] = next[ib];
+    next[ib] = tmp;
+
+    const data = await api("/api/admin/panels/reorder", {
+      method: "PUT",
+      body: JSON.stringify({ ids: next.map((p) => p.id) }),
+    });
+    panels = data.items || [];
+    renderList();
+  }
+
+  function onListEvent(e) {
+    const form = e.target.closest("form[data-form]");
+    if (e.type === "submit" && form) {
+      e.preventDefault();
+      showMsg(adminMsg, "");
+      saveFormKind(form).catch((err) => showMsg(adminMsg, err.message || "No se pudo guardar"));
+      return;
+    }
+
+    if (e.type !== "click") return;
     const del = e.target.closest("[data-delete]");
     const move = e.target.closest("[data-move]");
     const card = e.target.closest(".admin-panel");
@@ -340,42 +490,32 @@
     const id = card.getAttribute("data-id");
 
     if (del) {
-      if (!confirm("¿Eliminar este panel?")) return;
+      if (!confirm("¿Eliminar este panel completo (formulario y dashboard)?")) return;
       showMsg(adminMsg, "");
-      try {
-        const data = await api(`/api/admin/panels/${encodeURIComponent(id)}`, { method: "DELETE" });
-        panels = data.items || [];
-        renderList();
-        showMsg(adminMsg, "Panel eliminado.", "ok");
-      } catch (err) {
-        showMsg(adminMsg, err.message || "No se pudo eliminar");
-      }
+      api(`/api/admin/panels/${encodeURIComponent(id)}`, { method: "DELETE" })
+        .then((data) => {
+          panels = data.items || [];
+          renderList();
+          showMsg(adminMsg, "Panel eliminado.", "ok");
+        })
+        .catch((err) => showMsg(adminMsg, err.message || "No se pudo eliminar"));
       return;
     }
 
     if (move) {
       const dir = move.getAttribute("data-move");
-      const idx = panels.findIndex((p) => p.id === id);
-      if (idx < 0) return;
-      const swap = dir === "up" ? idx - 1 : idx + 1;
-      if (swap < 0 || swap >= panels.length) return;
-      const next = panels.slice();
-      const tmp = next[idx];
-      next[idx] = next[swap];
-      next[swap] = tmp;
+      const scope = move.getAttribute("data-scope") || "form";
       showMsg(adminMsg, "");
-      try {
-        const data = await api("/api/admin/panels/reorder", {
-          method: "PUT",
-          body: JSON.stringify({ ids: next.map((p) => p.id) }),
-        });
-        panels = data.items || [];
-        renderList();
-      } catch (err) {
-        showMsg(adminMsg, err.message || "No se pudo reordenar");
-      }
+      moveInScope(id, dir, scope).catch((err) =>
+        showMsg(adminMsg, err.message || "No se pudo reordenar"),
+      );
     }
-  });
+  }
+
+  adminListForms.addEventListener("submit", onListEvent);
+  adminListForms.addEventListener("click", onListEvent);
+  adminListDash.addEventListener("submit", onListEvent);
+  adminListDash.addEventListener("click", onListEvent);
 
   checkSession();
 })();
