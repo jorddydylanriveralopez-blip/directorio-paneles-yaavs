@@ -88,8 +88,8 @@ const DEFAULT_PANELS = [
     tag: "NPS",
     title: "NPS Activación BTL",
     blurb: "NPS y satisfacción post-activación BTL.",
-    formUrl: "https://encuesta-satisfaccion-activacion.ganayaavs.com/",
-    resultsUrl: "https://encuesta-satisfaccion-activacion.ganayaavs.com/resultados",
+    formUrl: "https://encuesta.directorio-btl.com/",
+    resultsUrl: "https://encuesta.directorio-btl.com/resultados",
   },
   {
     id: "reporte-diario-activacion-btl",
@@ -258,6 +258,13 @@ function migratePanels(list) {
       }
       if (!String(next.formConfig?.heroTitle || "").trim()) {
         next.formConfig = normalizeFormConfig(null, next.id);
+        changed = true;
+      }
+    }
+    if (next.id === "nps-activacion-btl") {
+      if (/ganayaavs\.com/i.test(next.formUrl || "") || /ganayaavs\.com/i.test(next.resultsUrl || "")) {
+        next.formUrl = "https://encuesta.directorio-btl.com/";
+        next.resultsUrl = "https://encuesta.directorio-btl.com/resultados";
         changed = true;
       }
     }
